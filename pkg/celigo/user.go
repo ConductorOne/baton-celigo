@@ -17,11 +17,11 @@ type (
 		AccountSSOLinked  string `json:"accountSSOLinked"`
 	}
 	User struct {
-		Id                      string                    `json:"_id"`
-		AccessLevel             string                    `json:"accessLevel"`
-		IntegrationsAccessLevel []IntegrationsAccessLevel `json:"integrationsAccessLevel"`
-		AccountSSORequired      bool                      `json:"accountSSORequired"`
-		Details                 UserDetails               `json:"sharedWithUser"`
+		Id                       string                    `json:"_id"`
+		AccessLevel              string                    `json:"accessLevel"`
+		IntegrationsAccessLevels []IntegrationsAccessLevel `json:"integrationAccessLevel"`
+		AccountSSORequired       bool                      `json:"accountSSORequired"`
+		Details                  UserDetails               `json:"sharedWithUser"`
 	}
 )
 
