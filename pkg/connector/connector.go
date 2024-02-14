@@ -20,6 +20,7 @@ type Celigo struct {
 func (d *Celigo) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
 	return []connectorbuilder.ResourceSyncer{
 		newUserBuilder(d.Client),
+		newIntegrationsBuilder(d.Client),
 	}
 }
 

@@ -25,7 +25,7 @@ type (
 	}
 )
 
-func (c *Client) ListUsers(ctx context.Context, nextPageLink string) (*[]User, string, *http.Response, error) {
+func (c *Client) ListUsers(ctx context.Context, nextPageLink string) ([]User, string, *http.Response, error) {
 	var err error
 	stringUrl := nextPageLink
 	if stringUrl == "" {
@@ -45,8 +45,8 @@ func (c *Client) ListUsers(ctx context.Context, nextPageLink string) (*[]User, s
 		return nil, "", nil, err
 	}
 
-	users := new([]User)
-	resp, err := c.do(req, users)
+	var users []User
+	resp, err := c.do(req, &users)
 	if err != nil {
 		return nil, "", nil, err
 	}

@@ -12,9 +12,9 @@ type Integration struct {
 	Description string `json:"description"`
 }
 
-func (c *Client) ListIntegrations(ctx context.Context, nextLink string) ([]Integration, string, *http.Response, error) {
+func (c *Client) ListIntegrations(ctx context.Context, nextPageLink string) ([]Integration, string, *http.Response, error) {
 	var err error
-	stringUrl := nextLink
+	stringUrl := nextPageLink
 	if stringUrl == "" {
 		stringUrl, err = url.JoinPath(c.baseUrl, "/v1/integrations")
 		if err != nil {
@@ -38,7 +38,7 @@ func (c *Client) ListIntegrations(ctx context.Context, nextLink string) ([]Integ
 		return nil, "", nil, err
 	}
 
-	newNextLink := resp.Header.Get("Link")
+	newNextPageLink := resp.Header.Get("Link")
 
-	return integrations, newNextLink, resp, nil
+	return integrations, newNextPageLink, resp, nil
 }

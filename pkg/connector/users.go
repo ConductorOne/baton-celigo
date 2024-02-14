@@ -55,7 +55,7 @@ func (o *userBuilder) List(ctx context.Context, parentResourceID *v2.ResourceId,
 	}
 
 	var resources []*v2.Resource
-	for _, user := range *response {
+	for _, user := range response {
 		user := user
 		resource, err := userResource(ctx, &user)
 		if err != nil {
