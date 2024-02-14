@@ -9,9 +9,14 @@ import (
 	"net/url"
 )
 
+type Region int
+
 const (
 	BaseEUUrl = "https://api.eu.integrator.io"
 	BaseUrl   = "https://api.integrator.io"
+
+	USRegion Region = iota
+	EURegion
 )
 
 type Client struct {
@@ -20,9 +25,9 @@ type Client struct {
 	baseUrl     string
 }
 
-func New(accessToken string, EURegion bool, httpClient *http.Client) *Client {
+func New(accessToken string, region Region, httpClient *http.Client) *Client {
 	baseUrl := BaseUrl
-	if EURegion {
+	if region == EURegion {
 		baseUrl = BaseEUUrl
 	}
 
@@ -60,10 +65,6 @@ func (c *Client) do(req *http.Request, response ...interface{}) (*http.Response,
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
-	}
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return resp, err
 	}
 
 	if response != nil {
