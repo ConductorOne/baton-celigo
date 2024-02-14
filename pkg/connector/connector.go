@@ -21,6 +21,7 @@ func (d *Celigo) ResourceSyncers(ctx context.Context) []connectorbuilder.Resourc
 	return []connectorbuilder.ResourceSyncer{
 		newUserBuilder(d.Client),
 		newIntegrationsBuilder(d.Client),
+		newRoleBuilder(d.Client),
 	}
 }
 
