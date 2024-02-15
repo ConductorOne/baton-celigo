@@ -55,3 +55,29 @@ func (c *Client) ListUsers(ctx context.Context, nextPageLink string) ([]User, st
 
 	return users, newNextPageLink, resp, nil
 }
+
+func (c *Client) UpdateAccessLevelOnUser(ctx context.Context, userId, accessLevel string) (*http.Response, error) {
+	stringUrl, err := url.JoinPath(c.baseUrl, "/v1/ashares", userId)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := url.Parse(stringUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := c.newRequestWithDefaultHeaders(ctx, http.MethodPut, u, User{
+		AccessLevel: accessLevel,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}

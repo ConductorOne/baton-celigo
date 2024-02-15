@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/conductorone/baton-celigo/pkg/celigo"
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
@@ -11,11 +12,15 @@ import (
 	ent "github.com/conductorone/baton-sdk/pkg/types/entitlement"
 	grant "github.com/conductorone/baton-sdk/pkg/types/grant"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
+	"go.uber.org/zap"
 )
 
 const (
 	MonitorItegrationEntitlement = "monitor"
 	ManageIntegrationEntitlement = "manage"
+
+	revokedRole = MonitorItegrationEntitlement
 )
 
 type integrationsBuilder struct {
@@ -138,4 +143,67 @@ func newIntegrationsBuilder(client *celigo.Client) *integrationsBuilder {
 		resourceType: userResourceType,
 		client:       client,
 	}
+}
+
+func (o *roleBuilder) Grant(ctx context.Context, principal *v2.Resource, entitlement *v2.Entitlement) (annotations.Annotations, error) {
+	l := ctxzap.Extract(ctx)
+
+	if principal.Id.ResourceType != userResourceType.Id {
+		err := fmt.Errorf("baton-celigo: only users can be granted to roles")
+
+		l.Warn(
+			err.Error(),
+			zap.String("principal_id", principal.Id.Resource),
+			zap.String("principal_type", principal.Id.ResourceType),
+		)
+
+		return nil, err
+	}
+
+	role := strings.ToLower(entitlement.Resource.Id.Resource)
+
+	_, err := o.client.UpdateAccessLevelOnUser(ctx, principal.Id.Resource, role)
+	if err != nil {
+		err = wrapError(err, "failed to grant role to user")
+
+		l.Error(
+			err.Error(),
+			zap.String("role_id", entitlement.Resource.Id.Resource),
+			zap.String("user_id", principal.Id.Resource),
+		)
+	}
+
+	return nil, nil
+}
+
+func (o *roleBuilder) Revoke(ctx context.Context, grant *v2.Grant) (annotations.Annotations, error) {
+	l := ctxzap.Extract(ctx)
+
+	principal := grant.Principal
+
+	if principal.Id.ResourceType != userResourceType.Id {
+		err := fmt.Errorf("baton-celigo: only users can be granted to roles")
+
+		l.Warn(
+			err.Error(),
+			zap.String("principal_id", principal.Id.Resource),
+			zap.String("principal_type", principal.Id.ResourceType),
+		)
+
+		return nil, err
+	}
+
+	role := strings.ToLower(revokedRole)
+	_, err := o.client.UpdateAccessLevelOnUser(ctx, principal.Id.Resource, role)
+	if err != nil {
+		err = wrapError(err, "failed to grant role to user")
+
+		l.Error(
+			err.Error(),
+			zap.String("role_id", revokedRole),
+			zap.String("user_id", principal.Id.Resource),
+		)
+	}
+
+	return nil, nil
 }
