@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -25,17 +26,22 @@ type Client struct {
 	baseUrl     string
 }
 
-func New(accessToken string, region Region, httpClient *http.Client) *Client {
-	baseUrl := BaseUrl
-	if region == EURegion {
-		baseUrl = BaseEUUrl
+func New(accessToken string, region Region, httpClient *http.Client) (*Client, error) {
+	var u string
+	switch region {
+	case USRegion:
+		u = BaseUrl
+	case EURegion:
+		u = BaseEUUrl
+	default:
+		return nil, fmt.Errorf("invalid region: %d", region)
 	}
 
 	return &Client{
 		httpClient:  httpClient,
 		accessToken: accessToken,
-		baseUrl:     baseUrl,
-	}
+		baseUrl:     u,
+	}, nil
 }
 
 func (c *Client) newRequestWithDefaultHeaders(ctx context.Context, method string, url *url.URL, body ...interface{}) (*http.Request, error) {

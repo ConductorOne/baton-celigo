@@ -66,7 +66,10 @@ func New(ctx context.Context, accessToken, region string) (*Celigo, error) {
 		return nil, fmt.Errorf("invalid region: %s", region)
 	}
 
-	client := celigo.New(accessToken, r, httpClient)
+	client, err := celigo.New(accessToken, r, httpClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Celigo{
 		Client: client,
