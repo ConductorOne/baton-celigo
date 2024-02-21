@@ -119,8 +119,7 @@ func (o *integrationsBuilder) Grants(ctx context.Context, resource *v2.Resource,
 
 	var rv []*v2.Grant
 	for _, user := range response {
-		user := user
-		userResource, err := userResource(ctx, &user)
+		userResource, err := userResource(ctx, &user) // #nosec G601
 		if err != nil {
 			return nil, "", nil, wrapError(err, "failed to create user resource")
 		}

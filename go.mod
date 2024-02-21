@@ -1,6 +1,6 @@
 module github.com/conductorone/baton-celigo
 
-go 1.22
+go 1.22.0
 
 require (
 	github.com/conductorone/baton-sdk v0.1.23

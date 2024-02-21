@@ -56,8 +56,7 @@ func (o *userBuilder) List(ctx context.Context, parentResourceID *v2.ResourceId,
 
 	var resources []*v2.Resource
 	for _, user := range response {
-		user := user
-		resource, err := userResource(ctx, &user)
+		resource, err := userResource(ctx, &user) // #nosec G601
 		if err != nil {
 			return nil, "", nil, wrapError(err, "failed to create user resource")
 		}
