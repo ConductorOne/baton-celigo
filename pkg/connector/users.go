@@ -74,12 +74,10 @@ func (o *userBuilder) List(ctx context.Context, parentResourceID *v2.ResourceId,
 	return resources, nextPageLink, nil, nil
 }
 
-// Entitlements always returns an empty slice for users.
 func (o *userBuilder) Entitlements(_ context.Context, resource *v2.Resource, _ *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {
 	return nil, "", nil, nil
 }
 
-// Grants always returns an empty slice for users since they don't have any entitlements.
 func (o *userBuilder) Grants(ctx context.Context, resource *v2.Resource, pToken *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
 	return nil, "", nil, nil
 }

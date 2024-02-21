@@ -84,7 +84,6 @@ func (o *integrationsBuilder) List(ctx context.Context, parentResourceID *v2.Res
 	return resources, nextPageLink, nil, nil
 }
 
-// Entitlements always returns an empty slice for users.
 func (o *integrationsBuilder) Entitlements(_ context.Context, resource *v2.Resource, _ *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {
 	var rv []*v2.Entitlement
 
@@ -105,7 +104,6 @@ func (o *integrationsBuilder) Entitlements(_ context.Context, resource *v2.Resou
 	return rv, "", nil, nil
 }
 
-// Grants always returns an empty slice for users since they don't have any entitlements.
 func (o *integrationsBuilder) Grants(ctx context.Context, resource *v2.Resource, pToken *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
 	bag, nextPageLink, err := parsePageToken(pToken.Token, &v2.ResourceId{ResourceType: o.resourceType.Id})
 	if err != nil {
