@@ -20,7 +20,7 @@ const (
 	MonitorItegrationEntitlement = "monitor"
 	ManageIntegrationEntitlement = "manage"
 
-	revokedRole = MonitorItegrationEntitlement
+	revokedRole = MonitorIntegrationEntitlement
 )
 
 type integrationsBuilder struct {
