@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	MonitorItegrationEntitlement = "monitor"
-	ManageIntegrationEntitlement = "manage"
+	MonitorIntegrationEntitlement = "monitor"
+	ManageIntegrationEntitlement  = "manage"
 
 	revokedRole = MonitorIntegrationEntitlement
 )
@@ -97,9 +97,9 @@ func (o *integrationsBuilder) Entitlements(_ context.Context, resource *v2.Resou
 	assigmentOptions = []ent.EntitlementOption{
 		ent.WithGrantableTo(userResourceType),
 		ent.WithDescription(fmt.Sprintf("has %s access level", resource.DisplayName)),
-		ent.WithDisplayName(fmt.Sprintf("%s access level %s", resource.DisplayName, MonitorItegrationEntitlement)),
+		ent.WithDisplayName(fmt.Sprintf("%s access level %s", resource.DisplayName, MonitorIntegrationEntitlement)),
 	}
-	rv = append(rv, ent.NewAssignmentEntitlement(resource, MonitorItegrationEntitlement, assigmentOptions...))
+	rv = append(rv, ent.NewAssignmentEntitlement(resource, MonitorIntegrationEntitlement, assigmentOptions...))
 
 	return rv, "", nil, nil
 }
