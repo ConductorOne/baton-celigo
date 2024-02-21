@@ -63,7 +63,7 @@ func New(ctx context.Context, accessToken, region string) (*Celigo, error) {
 	case "eu":
 		r = celigo.EURegion
 	default:
-		return nil, fmt.Errorf("invalid region: %s", region)
+		return nil, fmt.Errorf("invalid region: %s. Value can be either us or eu.", region)
 	}
 
 	client, err := celigo.New(accessToken, r, httpClient)
