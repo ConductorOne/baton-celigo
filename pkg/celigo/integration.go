@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 )
 
 type Integration struct {
@@ -27,13 +29,13 @@ func (c *Client) ListIntegrations(ctx context.Context, nextPageLink string) ([]I
 		return nil, "", nil, err
 	}
 
-	req, err := c.newRequestWithDefaultHeaders(ctx, http.MethodGet, u)
+	req, err := c.NewRequest(ctx, http.MethodGet, u)
 	if err != nil {
 		return nil, "", nil, err
 	}
 
 	var integrations []Integration
-	resp, err := c.do(req, &integrations)
+	resp, err := c.Do(req, uhttp.WithJSONResponse(&integrations))
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -58,13 +60,13 @@ func (c *Client) ListIntegrationsUsers(ctx context.Context, integrationId, nextP
 		return nil, "", nil, err
 	}
 
-	req, err := c.newRequestWithDefaultHeaders(ctx, http.MethodGet, u)
+	req, err := c.NewRequest(ctx, http.MethodGet, u)
 	if err != nil {
 		return nil, "", nil, err
 	}
 
 	var users []User
-	resp, err := c.do(req, &users)
+	resp, err := c.Do(req, uhttp.WithJSONResponse(&users))
 	if err != nil {
 		return nil, "", nil, err
 	}

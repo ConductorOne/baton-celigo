@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 )
 
 type (
@@ -40,13 +42,13 @@ func (c *Client) ListUsers(ctx context.Context, nextPageLink string) ([]User, st
 		return nil, "", nil, err
 	}
 
-	req, err := c.newRequestWithDefaultHeaders(ctx, http.MethodGet, u)
+	req, err := c.NewRequest(ctx, http.MethodGet, u)
 	if err != nil {
 		return nil, "", nil, err
 	}
 
 	var users []User
-	resp, err := c.do(req, &users)
+	resp, err := c.Do(req, uhttp.WithJSONResponse(&users))
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -67,14 +69,14 @@ func (c *Client) UpdateAccessLevelOnUser(ctx context.Context, userId, accessLeve
 		return nil, err
 	}
 
-	req, err := c.newRequestWithDefaultHeaders(ctx, http.MethodPut, u, User{
+	req, err := c.NewRequest(ctx, http.MethodPut, u, uhttp.WithJSONBody(User{
 		AccessLevel: accessLevel,
-	})
+	}))
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
