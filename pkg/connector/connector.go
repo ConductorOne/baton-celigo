@@ -47,11 +47,7 @@ func (d *Celigo) Validate(ctx context.Context) (annotations.Annotations, error) 
 
 // New returns a new instance of the connector.
 func New(ctx context.Context, accessToken, region string) (*Celigo, error) {
-	httpClient, err := uhttp.NewClient(
-		ctx,
-		uhttp.WithLogger(true, nil),
-		uhttp.WithUserAgent("baton-celigo"),
-	)
+	httpClient, err := uhttp.NewBearerAuth(accessToken).GetClient(ctx)
 	if err != nil {
 		return nil, err
 	}
