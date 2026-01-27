@@ -30,6 +30,9 @@ var (
 	FieldRelationships = []field.SchemaFieldRelationship{}
 )
 
+//go:generate go run ./gen
+var Config = field.NewConfiguration(ConfigurationFields)
+
 // ValidateConfig is run after the configuration is loaded, and should return an error if it isn't valid.
 func ValidateConfig(ctx context.Context, cfg *Celigo) error {
 	if cfg.CeligoAccessToken == "" {
