@@ -19,11 +19,16 @@ var (
 		field.WithDefaultValue("us"),
 		field.WithDescription("Region"),
 	)
+	BaseURLField = field.StringField(
+		"base-url",
+		field.WithDescription("Override the Celigo API URL (for testing)"),
+	)
 
 	// ConfigurationFields defines all configurable fields for the connector.
 	ConfigurationFields = []field.SchemaField{
 		CeligoAccessTokenField,
 		RegionField,
+		BaseURLField,
 	}
 
 	// FieldRelationships defines relationships between fields (constraints).

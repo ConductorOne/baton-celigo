@@ -6,6 +6,7 @@ import "reflect"
 type Celigo struct {
 	CeligoAccessToken string `mapstructure:"celigo-access-token"`
 	Region string `mapstructure:"region"`
+	BaseUrl string `mapstructure:"base-url"`
 }
 
 func (c *Celigo) findFieldByTag(tagValue string) (any, bool) {
