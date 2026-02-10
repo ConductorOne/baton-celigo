@@ -1,6 +1,6 @@
 ![Baton Logo](./docs/images/baton-logo.png)
 
-# `baton-celigo` [![Go Reference](https://pkg.go.dev/badge/github.com/conductorone/baton-celigo.svg)](https://pkg.go.dev/github.com/conductorone/baton-celigo) ![main ci](https://github.com/conductorone/baton-celigo/actions/workflows/main.yaml/badge.svg)
+# `baton-celigo` [![Go Reference](https://pkg.go.dev/badge/github.com/conductorone/baton-celigo.svg)](https://pkg.go.dev/github.com/conductorone/baton-celigo) ![verify](https://github.com/conductorone/baton-celigo/actions/workflows/verify.yaml/badge.svg)
 
 `baton-celigo` is a connector for Baton built using the [Baton SDK](https://github.com/conductorone/baton-sdk). It works with Celigo API.
 
@@ -8,11 +8,11 @@ Check out [Baton](https://github.com/conductorone/baton) to learn more about the
 
 # Prerequisites
 
-Connector requires bearer access token that is used throughout the communication with API. To obtain this token, you have to create one in Celigo. More in information about how to generate token [here](https://docs.celigo.com/hc/en-us/articles/360042281231-Getting-started-with-standard-REST-API)). 
+Connector requires bearer access token that is used throughout the communication with API. To obtain this token, you have to create one in Celigo. More in information about how to generate token [here](https://docs.celigo.com/hc/en-us/articles/360042281231-Getting-started-with-standard-REST-API)).
 
 After you have obtained access token, you can use it with connector. You can do this by setting `BATON_CELIGO_ACCESS_TOKEN` or by passing `--celigo-access-token`.
 
-Also you can set up region. Either US (default) or EU. It's can be done by `BATON_REGION` or by passing `--region`. 
+Also you can set up region. Either US (default) or EU. It's can be done by `BATON_REGION` or by passing `--region`.
 
 # Getting Started
 
