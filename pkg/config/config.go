@@ -22,6 +22,7 @@ var (
 	BaseURLField = field.StringField(
 		"base-url",
 		field.WithDescription("Override the Celigo API URL (for testing)"),
+		field.WithHidden(true),
 	)
 
 	// ConfigurationFields defines all configurable fields for the connector.
