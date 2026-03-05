@@ -46,7 +46,7 @@ func (d *Celigo) Validate(ctx context.Context) (annotations.Annotations, error) 
 }
 
 // New returns a new instance of the connector.
-func New(ctx context.Context, accessToken, region string) (*Celigo, error) {
+func New(ctx context.Context, accessToken, region, baseURL string) (*Celigo, error) {
 	httpClient, err := uhttp.NewBearerAuth(accessToken).GetClient(ctx)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func New(ctx context.Context, accessToken, region string) (*Celigo, error) {
 		return nil, fmt.Errorf("invalid region: %s, value can be either us or eu", region)
 	}
 
-	client, err := celigo.New(accessToken, r, httpClient)
+	client, err := celigo.New(accessToken, r, baseURL, httpClient)
 	if err != nil {
 		return nil, err
 	}

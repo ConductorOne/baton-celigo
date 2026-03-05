@@ -23,15 +23,19 @@ type Client struct {
 	baseUrl string
 }
 
-func New(accessToken string, region Region, httpClient *http.Client) (*Client, error) {
+func New(accessToken string, region Region, baseURL string, httpClient *http.Client) (*Client, error) {
 	var u string
-	switch region {
-	case USRegion:
-		u = BaseUrl
-	case EURegion:
-		u = BaseEUUrl
-	default:
-		return nil, fmt.Errorf("invalid region: %d", region)
+	if baseURL != "" {
+		u = baseURL
+	} else {
+		switch region {
+		case USRegion:
+			u = BaseUrl
+		case EURegion:
+			u = BaseEUUrl
+		default:
+			return nil, fmt.Errorf("invalid region: %d", region)
+		}
 	}
 
 	return &Client{
