@@ -39,10 +39,9 @@ func integrationResource(ctx context.Context, integration *celigo.Integration) (
 		"description": integration.Description,
 	}
 
-	integrationTraitOptions := []rs.AppTraitOption{
-		rs.WithAppProfile(profile),
-	}
-	resource, err := rs.NewAppResource(integration.Name, integrationsResourceType, integration.Id, integrationTraitOptions)
+	integrationTraitOptions := []rs.AppTraitOption{}
+	resource, err := rs.NewAppResource(integration.Name, integrationsResourceType, integration.Id, integrationTraitOptions,
+		rs.WithResourceProfile(profile))
 	if err != nil {
 		return nil, err
 	}

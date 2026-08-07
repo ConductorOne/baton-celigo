@@ -29,11 +29,11 @@ func userResource(ctx context.Context, user *celigo.User) (*v2.Resource, error) 
 	}
 
 	userTraits := []rs.UserTraitOption{
-		rs.WithUserProfile(profile),
 		rs.WithUserLogin(user.Details.Email),
 	}
 
-	resource, err := rs.NewUserResource(user.Details.Email, userResourceType, user.Id, userTraits)
+	resource, err := rs.NewUserResource(user.Details.Email, userResourceType, user.Id, userTraits,
+		rs.WithResourceProfile(profile))
 	if err != nil {
 		return nil, err
 	}
