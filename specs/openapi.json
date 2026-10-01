@@ -1,0 +1,270 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Celigo integrator.io API (baton-celigo connector surface)",
+    "version": "1.0.0",
+    "description": "This document describes ONLY the subset of the Celigo integrator.io REST API that the baton-celigo connector (pkg/celigo) calls. It is not a full description of the vendor's API. Scope was derived from pkg/celigo/client.go, pkg/celigo/user.go, and pkg/celigo/integration.go, and the shapes were settled against Celigo's public developer documentation (developer.celigo.com, docs.celigo.com) where available."
+  },
+  "servers": [
+    {
+      "url": "https://api.integrator.io",
+      "description": "US region (default). Selected when the connector's `region` config field is \"us\" (the default) and `base-url` is not set."
+    },
+    {
+      "url": "https://api.eu.integrator.io",
+      "description": "EU region. Selected when the connector's `region` config field is set to \"eu\"."
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/v1/ashares": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List account users (ashares)",
+        "description": "Returns all workspace users with access to the account (the account owner is not included, only invited/shared users appear). Called by baton-celigo for the user resource sync (pkg/connector/users.go) and reused to compute role grants (pkg/connector/roles.go), filtering client-side on `accessLevel`.\n\nPagination: RFC 5988 `Link` response header with `rel=\"next\"`. The connector follows the opaque next-page URL verbatim (pkg/celigo/integration.go/user.go: `resp.Header.Get(\"Link\")`) until the header is absent; it sends no query parameters of its own.",
+        "responses": {
+          "200": {
+            "description": "OK - array of user access records.",
+            "headers": {
+              "Link": {
+                "description": "RFC 5988 pagination link. Contains a `rel=\"next\"` URL with an opaque `after` cursor when more results exist; absent on the last page.",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No users exist in the account."
+          },
+          "401": {
+            "description": "Unauthorized - the bearer token is missing or invalid."
+          }
+        }
+      }
+    },
+    "/v1/ashares/{_id}": {
+      "put": {
+        "operationId": "updateAccessLevelOnUser",
+        "summary": "Update a user's account access level",
+        "description": "Replaces a workspace user's access settings. Called by baton-celigo during Grant/Revoke on the role resource (pkg/connector/roles.go -> pkg/celigo/user.go UpdateAccessLevelOnUser) to set a user's account-level `accessLevel` to \"monitor\", \"manage\", or \"administrator\" (revoke sets it back to \"monitor\").\n\nNote on request body: the connector builds the JSON body from the full `User` Go struct with only `AccessLevel` populated, and no `omitempty` tags are present, so the literal wire body also sends `_id: \"\"`, `integrationAccessLevel: null`, `accountSSORequired: false`, and an empty `sharedWithUser` object alongside the intended `accessLevel`. Per vendor docs, this endpoint treats omitted/zero-valued fields as clearing the corresponding setting (except `accountSSORequired`), so in practice this call also clears any per-integration access overrides on the target user. This is existing client behavior, not a property of the API surface; flagging here per the build-openapi-spec procedure rather than silently normalizing it away.",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "description": "The user's account access-record ID (ashare ID), taken from `principal.Id.Resource` in pkg/connector/roles.go.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content - user access settings updated."
+          },
+          "400": {
+            "description": "Bad Request - body grants no access, or echoes the read-only `userType` field."
+          },
+          "401": {
+            "description": "Unauthorized - the bearer token is missing or invalid."
+          },
+          "403": {
+            "description": "Forbidden - called from a sandbox environment."
+          },
+          "404": {
+            "description": "Not Found - user not found."
+          },
+          "422": {
+            "description": "Unprocessable Entity - empty `integrationAccessLevel` with no `accessLevel`."
+          }
+        }
+      }
+    },
+    "/v1/integrations": {
+      "get": {
+        "operationId": "listIntegrations",
+        "summary": "List integrations",
+        "description": "Returns all integrations in the account. Called by baton-celigo for the integration (App) resource sync (pkg/connector/integrations.go -> pkg/celigo/integration.go ListIntegrations).\n\nPagination: RFC 5988 `Link` response header with `rel=\"next\"`, followed the same way as /v1/ashares. The connector sends no query parameters (no `limit`/`include`/`exclude`, though the vendor API supports them).",
+        "responses": {
+          "200": {
+            "description": "OK - array of integrations.",
+            "headers": {
+              "Link": {
+                "description": "RFC 5988 pagination link. Contains a `rel=\"next\"` URL with an opaque `after` cursor when more results exist; absent on the last page.",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Integration" }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No integrations in the account."
+          },
+          "401": {
+            "description": "Unauthorized - the bearer token is missing or invalid."
+          }
+        }
+      }
+    },
+    "/v1/integrations/{_id}/ashares": {
+      "get": {
+        "operationId": "listIntegrationsUsers",
+        "summary": "List account shares (users) for a specific integration",
+        "description": "Returns the account-share (ashare) records for users who have been granted access to a specific integration's owning account, each with the user's per-integration access level. Called by baton-celigo to compute grants for the integration (App) resource (pkg/connector/integrations.go -> pkg/celigo/integration.go ListIntegrationsUsers); the connector grants `user.AccessLevel` from each entry directly against the integration resource.\n\nPagination: same RFC 5988 `Link` header convention as the other list endpoints in this spec.\n\nProvenance note: this sub-resource path was not found directly on the current developer.celigo.com integrations reference page (fetched 2026-10-01); its existence, path shape, and response fields were corroborated via search-indexed content citing the literal path and an example response payload (accessLevel, _id, accepted, accountSSORequired, accountMFARequired fields), and by analogy with the account-level /v1/ashares schema. Treat the response schema here as settled-but-less-certain than the other three operations in this document.",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "description": "The integration's ID, taken from `resource.Id.Resource` in pkg/connector/integrations.go.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK - array of user access records scoped to this integration.",
+            "headers": {
+              "Link": {
+                "description": "RFC 5988 pagination link. Contains a `rel=\"next\"` URL with an opaque `after` cursor when more results exist; absent on the last page.",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No users shared on this integration."
+          },
+          "401": {
+            "description": "Unauthorized - the bearer token is missing or invalid."
+          },
+          "404": {
+            "description": "Not Found - integration not found."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Celigo integrator.io personal access token, supplied by the user via the `celigo-access-token` connector config field and sent as `Authorization: Bearer <token>` (pkg/connector/connector.go: uhttp.NewBearerAuth(accessToken))."
+      }
+    },
+    "schemas": {
+      "Integration": {
+        "type": "object",
+        "description": "Fields read by the connector from an integration record (pkg/celigo/integration.go). The vendor's Integration object has additional fields (settings, flowGroupings, apiGroupings, _connectorId, _templateId, readme, createdAt, lastModified, deletedAt, etc.) that the connector does not read and which are therefore out of scope for this spec.",
+        "required": ["_id", "name"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Integration's object ID (24-character hex string). Read-only."
+          },
+          "name": {
+            "type": "string",
+            "description": "Integration display name. 1-100 characters, required on creation."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Free-text description of the integration's purpose/behavior. Optional, up to 5120 characters."
+          }
+        }
+      },
+      "IntegrationAccessLevelEntry": {
+        "type": "object",
+        "description": "One per-integration access override for a user, as returned in `User.integrationAccessLevel`.",
+        "required": ["_integrationId", "accessLevel"],
+        "properties": {
+          "_integrationId": {
+            "type": "string",
+            "description": "The integration's object ID this access-level entry applies to."
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": ["manage", "monitor"],
+            "description": "Per-integration access level. Narrower than the account-level `accessLevel` enum (no \"administrator\" or \"none\" at this scope). See pkg/celigo/access_level.go IntegrationsAccessLevels."
+          }
+        }
+      },
+      "UserSharedDetails": {
+        "type": "object",
+        "description": "Identity/auth metadata for the invited user, nested under `User.sharedWithUser`. Only the fields the connector reads are modeled; the vendor object also includes `_id`, `name`, and `lastSignIn`.",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Invited user's email address, used by the connector as both login and external ID."
+          },
+          "allowedToResetMFA": {
+            "type": "boolean",
+            "description": "Whether the user is allowed to reset their own MFA."
+          },
+          "accountSSOLinked": {
+            "type": "string",
+            "enum": ["not_linked", "this_account", "other_account"],
+            "description": "Whether this user's SSO identity is linked, and to which account."
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "description": "An account-share (ashare) record describing one user's access to the account or to a specific integration, as read by pkg/celigo/user.go and pkg/celigo/integration.go. The vendor's User/ashare object has many additional fields (createdAt, lastModified, accepted, disabled, dismissed, lastSignIn, provisionedBy, externalId, _scimSsoClientId, accountMFARequired, ssoSetupPending, allowAccessToAPIM, allowToEditRetryData, allowIntegrationWorkspaceCreation, createdVia, userType, isProductionAdmin, etc.) that the connector does not read and which are therefore out of scope for this spec.",
+        "required": ["_id", "integrationAccessLevel"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Access-record (ashare) object ID. Used by the connector as the user resource's primary ID and as the `{_id}` path parameter on PUT /v1/ashares/{_id}."
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": ["monitor", "manage", "administrator", "none"],
+            "description": "Account-level access. On GET this reflects the user's current account access; on PUT the connector sets this to grant/revoke the \"role\" resource (monitor/manage/administrator). May be omitted when the user only has per-integration access."
+          },
+          "integrationAccessLevel": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/IntegrationAccessLevelEntry" },
+            "description": "Per-integration access overrides for this user."
+          },
+          "accountSSORequired": {
+            "type": "boolean",
+            "description": "Whether SSO is required for this user's account."
+          },
+          "sharedWithUser": {
+            "$ref": "#/components/schemas/UserSharedDetails"
+          }
+        }
+      }
+    }
+  }
+}
